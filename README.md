@@ -1,4 +1,7 @@
-# NextWorkZone
+# NextWorkZone（Tauri 版）
+
+> **本仓库已停止维护。** 这是 NextWorkZone 的 Tauri 跨平台版本，最后一个版本见 [Releases](https://github.com/tanner-sh/NextWorkZone-Tauri/releases)（macOS / Windows / Linux 安装包）。
+> 后续开发转到 [NextWorkZone](https://github.com/tanner-sh/NextWorkZone)，用 Swift + SwiftUI 重写，只支持 macOS。
 
 个人工作空间：自带待办、笔记（含每日日记）、知识库，并与 Jira、Confluence（Wiki）、GitLab 集成——
 Jira 问题自动进入待办、笔记里的问题键实时显示状态、问题可一键沉淀到知识库、知识库页面可发布到 Wiki。
@@ -12,7 +15,7 @@ Jira 问题自动进入待办、笔记里的问题键实时显示状态、问题
 npm install
 npx tauri dev          # 开发模式运行（前端热更新，Rust 改动自动重启）
 cargo test --workspace # Rust 测试
-npx tauri build        # 打包为 .app / .dmg（target/release/bundle/）
+npx tauri build        # 打包为当前平台的安装包（target/release/bundle/）
 ```
 
 不启动界面、直接对真实系统做只读调用（地址取自应用配置，Token 取自 `~/.nextworkzone/tokens.env`）：

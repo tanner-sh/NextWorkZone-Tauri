@@ -1,0 +1,65 @@
+# 推送 v* 标签时在三个平台打包，产物上传到同名 Release。
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: macos-latest
+            target: aarch64-apple-darwin
+          - platform: macos-latest
+            target: x86_64-apple-darwin
+          - platform: windows-latest
+            target: x86_64-pc-windows-msvc
+          - platform: ubuntu-22.04
+            target: x86_64-unknown-linux-gnu
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Linux 依赖
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev patchelf libxdo-dev libssl-dev libdbus-1-dev
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.target }}
+
+      - run: npm ci
+
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: NextWorkZone (Tauri) ${{ github.ref_name }}
+          releaseBody: |
+            Tauri 版的最后一个版本，之后不再维护。
+
+            - macOS：`aarch64` 为 Apple 芯片，`x64` 为 Intel。安装包未签名，首次打开请在“访达”中右键选择“打开”，或执行 `xattr -dr com.apple.quarantine /Applications/NextWorkZone.app`
+            - Windows：`.exe`（NSIS）或 `.msi`
+            - Linux：`.deb`、`.rpm` 或 `.AppImage`
+          releaseDraft: false
+          prerelease: false
+          args: --target ${{ matrix.target }}
