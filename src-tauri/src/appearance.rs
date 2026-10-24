@@ -3,10 +3,12 @@
 
 use std::sync::atomic::{AtomicBool, Ordering};
 
+#[cfg(target_os = "macos")]
 use nextworkzone_desktop::window::GlassSidebar;
 use tauri::window::{Effect, EffectState, EffectsBuilder};
 use tauri::{AppHandle, Manager};
 
+#[cfg(target_os = "macos")]
 /// 侧栏玻璃面板的位置和圆角，与 styles.css 中的 --sidebar-inset、--sidebar-width、--sidebar-radius 一致。
 const SIDEBAR: GlassSidebar = GlassSidebar { inset: 8.0, width: 220.0, radius: 16.0 };
 
@@ -19,7 +21,10 @@ pub fn glass() -> bool {
 
 pub fn setup(app: &AppHandle) {
     let Some(window) = app.get_webview_window("main") else { return };
+    #[cfg(target_os = "macos")]
     let glass = window.ns_window().is_ok_and(|w| nextworkzone_desktop::window::glass_sidebar(w, SIDEBAR));
+    #[cfg(not(target_os = "macos"))]
+    let glass = false;
     GLASS.store(glass, Ordering::Relaxed);
     if !glass {
         // 不支持 Liquid Glass：整个窗口背后放侧栏材质，内容区由网页画不透明背景
